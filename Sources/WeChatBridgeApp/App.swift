@@ -12,9 +12,17 @@ import SwiftUI
 struct WeChatBridgeMainApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
-    /// An empty placeholder: `App` requires a scene, and WeChatBridge's one window is
-    /// opened by `SettingsWindowController` instead. An accessory app never owns
-    /// a menu bar, so this scene is unreachable and draws nothing.
+    /// An empty placeholder: `App` requires a scene, and WeChatBridge's one
+    /// window is opened by `SettingsWindowController` instead. An accessory app
+    /// never owns a menu bar, so this scene is unreachable and draws nothing.
+    ///
+    /// Do not switch this to `WindowGroup`: measured on macOS 14, a
+    /// `WindowGroup("…") { EmptyView() }` creates and orders in a real 900×450
+    /// window (named for the group's title) that sits over the menu bar and
+    /// hides whatever the settings window was showing, and autosaves its frame
+    /// as `NSWindow Frame SwiftUI.WindowGroup<…>-AppWindow-1`. `Settings` makes
+    /// no window of its own, which is what "draws nothing" here has always
+    /// relied on.
     var body: some Scene {
         Settings { EmptyView() }
     }
@@ -78,6 +86,31 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             NSApp.terminate(nil)
             return
         }
+
+        // The `Settings { EmptyView() }` scene required by `App`'s body makes a
+        // window anyway on macOS 14: a 900×450 pane the system localizes as
+        // “设置” and orders in over whatever the user opened. It carries no
+        // content, so it looked like “设置里头什么都看不到”.
+        //
+        // It cannot be `orderOut`-ed, only moved away: an `LSUIElement` app
+        // with no window at all is eligible for automatic termination, and
+        // macOS kills it about five seconds after launch — measured in the
+        // system log as `_kLSApplicationWouldBeTerminatedByTALKey=1`, and
+        // `disableAutomaticTermination` does not survive it either, because
+        // AppKit re-enables termination the moment it sees zero windows.
+        // A menu-bar app whose whole job is to be running when a share
+        // arrives cannot be quit for being idle, so the placeholder is kept
+        // and parked off-screen instead of closed. Nothing draws in it, and
+        // it never becomes key.
+        for window in NSApp.windows {
+            window.alphaValue = 0
+            window.setFrame(NSRect(x: -100000, y: -100000, width: 1, height: 1), display: false)
+            window.canHide = true
+            window.isMovable = false
+            window.hidesOnDeactivate = false
+        }
+
+        ProcessInfo.processInfo.disableAutomaticTermination("running as a menu-bar helper")
 
         applyActivationPolicy()
         preferences.$showInDock

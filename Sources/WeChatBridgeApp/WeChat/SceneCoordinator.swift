@@ -96,7 +96,14 @@ final class SceneCoordinator {
             senders: selection.insights.senders,
             allowDefault: false
         )
-        if resolution.source != .binding && resolution.source != .fingerprint {
+        // A keyword match is the user's own configuration: they put 「班」 in a
+        // scene's keywords precisely so a group whose name contains it uses
+        // that scene. Trust it like a binding instead of dropping the scene and
+        // asking again — before this, every forward through an unbound class
+        // group landed on the picker with the prompt discarded.
+        if resolution.source != .binding
+            && resolution.source != .fingerprint
+            && resolution.source != .keyword {
             resolution = SceneResolution(
                 scenes: [],
                 groupName: resolution.groupName,

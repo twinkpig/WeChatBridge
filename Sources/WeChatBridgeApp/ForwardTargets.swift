@@ -145,6 +145,7 @@ final class ForwardTargets: ObservableObject {
             ForwardDestination(action: .codex, target: nil),
             ForwardDestination(action: .claude, target: nil),
             ForwardDestination(action: .doubao, target: nil),
+            ForwardDestination(action: .deepSeek, target: nil),
             ForwardDestination(action: .qwen, target: nil),
             ForwardDestination(action: .workBuddy, target: nil),
             ForwardDestination(action: .weSight, target: nil),

@@ -21,12 +21,13 @@ SHARE_SLOTS=(
 	"Codex|WeChatBridgeShareCodex|ShareCodex|codex|发给 Codex"
 	"Claude|WeChatBridgeShareClaude|ShareClaude|claude|发给 Claude"
 	"Doubao|WeChatBridgeShareDoubao|ShareDoubao|doubao|发给豆包"
+	"DeepSeek|WeChatBridgeShareDeepSeek|ShareDeepSeek|deepSeek|发给 DeepSeek Harness"
 	"QwenWork|WeChatBridgeShareQwenWork|ShareQwenWork|qwen|发给千问办公"
 	"WorkBuddy|WeChatBridgeShareWorkBuddy|ShareWorkBuddy|workBuddy|发给 WorkBuddy"
 	"WeSight|WeChatBridgeShareWeSight|ShareWeSight|weSight|发给 WeSight"
 	"Obsidian|WeChatBridgeShareObsidian|ShareObsidian|obsidian|沉淀到 Obsidian"
 	"Clipboard|WeChatBridgeShareClipboard|ShareClipboard|clipboard|复制到剪贴板"
-	"Custom|WeChatBridgeShareCustom|ShareCustom|custom|发送到自定义"
+	"Custom|WeChatBridgeShareCustom|ShareCustom|custom|DeepSeek Harness Desktop"
 )
 
 # Artwork copied into each extension that targets another app. Clipboard and
@@ -36,6 +37,7 @@ share_logo_name() {
 		Codex) printf '%s' "04-chatgpt.png" ;;
 		Claude) printf '%s' "03-claude.png" ;;
 		Doubao) printf '%s' "01-doubao.png" ;;
+		DeepSeek) printf '%s' "08-deepseek.png" ;;
 		QwenWork) printf '%s' "02-qwen.png" ;;
 		WorkBuddy) printf '%s' "06-workbuddy.png" ;;
 		WeSight) printf '%s' "07-wesight.png" ;;

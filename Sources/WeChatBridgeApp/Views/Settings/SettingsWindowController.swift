@@ -71,9 +71,24 @@ final class SettingsWindowController {
         window.title = ""
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
-        window.styleMask = [.titled, .closable, .resizable, .fullSizeContentView]
+        // `.resizable` is what makes the window draggable by its edge and
+        // miniaturizable; `.fullScreen` is deliberately absent — putting that
+        // mask on a window outside a full-screen transition throws
+        // `NSGenericException` and takes the app down with it, measured on
+        // macOS 14 when the URL handler reached `show()`. Full-screen stays
+        // reachable the way it is for every other Mac window: the green
+        // button's alternate press, which `.fullSizeContentView` already draws
+        // the content under.
+        window.styleMask = [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView]
         // The design size is a floor, not a cage: below it the panes are the
         // ones that break, and above it they simply get more room.
+        //
+        // The height is what the 通用 pane actually occupies at this width —
+        // measured, not guessed. The list panes scroll past this, which is what
+        // a list is for. A stale autosave can hand back a frame shorter than
+        // this floor (the SwiftUI placeholder scene left a 450 pt one behind),
+        // so the frame is lifted to the floor here rather than only being a
+        // drag minimum.
         window.contentMinSize = NSSize(width: Metrics.settingsWidth, height: Metrics.settingsHeight)
         // The window has no title bar to grab, so the background is the handle.
         window.isMovableByWindowBackground = true
@@ -90,7 +105,28 @@ final class SettingsWindowController {
         // Last, so the frame the user dragged to wins over the centred default.
         // A window that can be resized and then forgets reads as one that is
         // still fixed.
+        //
+        // A stale autosave record can be shorter than the floor — measured
+        // 900×450 against a 780×640 design, which clipped the 通用 pane in
+        // half — or off-screen entirely, measured at x = −1350 on a machine
+        // whose external display had been unplugged. `setFrameAutosaveName`
+        // restores after this point, so the restored frame is repaired here.
+        //
+        // `window.screen` is still `nil` at this point: the window has not been
+        // ordered onto any screen yet. `NSScreen.main` is the screen the
+        // centre-and-restore above just put it on.
         _ = window.setFrameAutosaveName("WeChatBridgeSettings")
+        let screen = NSScreen.main
+        var frame = window.frame
+        if frame.width < Metrics.settingsWidth { frame.size.width = Metrics.settingsWidth }
+        if frame.height < Metrics.settingsHeight { frame.size.height = Metrics.settingsHeight }
+        if let visible = screen?.visibleFrame {
+            if frame.maxX > visible.maxX { frame.origin.x = visible.maxX - frame.width }
+            if frame.minX < visible.minX { frame.origin.x = visible.minX }
+            if frame.maxY > visible.maxY { frame.origin.y = visible.maxY - frame.height }
+            if frame.minY < visible.minY { frame.origin.y = visible.minY }
+        }
+        window.setFrame(frame, display: false)
         self.window = window
 
         window.makeKeyAndOrderFront(nil)

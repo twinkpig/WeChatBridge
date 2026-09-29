@@ -1,9 +1,12 @@
 import AppKit
+import Combine
 import WeChatBridgeCore
 
 /// The menu bar item: the always-visible entry point to WeChatBridge.
 ///
-/// Left click opens the main window. Right click and ⌃click open the menu.
+/// Left click opens the main window, or — when a forward has failed and the
+/// user has not seen it — the history pane that says what went wrong. Right
+/// click and ⌃click open the menu.
 @MainActor
 final class StatusItemController: NSObject, NSMenuDelegate {
     /// Ten batches is about a screen of menu. Beyond that the submenu stops
@@ -15,6 +18,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     private let updater: AppUpdater
     private let openSettings: (SettingsTab) -> Void
     private let menu = NSMenu()
+    private var cancellables = Set<AnyCancellable>()
 
     init(
         model: AppModel,
@@ -34,11 +38,36 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         statusItem.button?.action = #selector(statusItemClicked)
         statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
 
-        statusItem.button?.toolTip = L10n.text("微信流")
-        let image = StatusGlyph.image
+        updateIcon()
+        statusItem.button?.setAccessibilityLabel(L10n.text("微信流"))
+
+        // The badge is driven by the batch list rather than by the failure
+        // event itself: `ActionRunner` records a failure and moves on, and the
+        // state that belongs on the icon is "there is a failure the user has
+        // not looked at yet", not "a failure just happened".
+        model.$batches
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.updateIcon() }
+            .store(in: &cancellables)
+    }
+
+    /// An outcome the user has not seen yet. Anything worse than copied means
+    /// the files did not reach the target app, which is the only thing an icon
+    /// in the menu bar should be shouting about.
+    private var hasUnreadFailure: Bool {
+        model.batches.contains { batch in
+            guard let outcome = batch.outcome else { return false }
+            return outcome.kind == .failed || outcome.kind == .expired
+        }
+    }
+
+    private func updateIcon() {
+        let image = hasUnreadFailure ? StatusGlyph.imageWithAlert : StatusGlyph.image
         image.accessibilityDescription = L10n.text("微信流")
         statusItem.button?.image = image
-        statusItem.button?.setAccessibilityLabel(L10n.text("微信流"))
+        statusItem.button?.toolTip = hasUnreadFailure
+            ? L10n.text("有转发未完成，点按查看")
+            : L10n.text("微信流")
     }
 
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
@@ -50,6 +79,11 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             statusItem.menu = menu
             sender.performClick(nil)
             statusItem.menu = nil
+        } else if hasUnreadFailure {
+            // A failed forward is the one thing a plain click should answer.
+            // The badge is the entire message the icon can carry, and the
+            // history pane is the only place that says *what* failed.
+            openSettings(.history)
         } else {
             openSettings(.general)
         }

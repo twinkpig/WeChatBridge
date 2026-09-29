@@ -6,6 +6,7 @@ public enum AgentID: String, Codable, CaseIterable, Hashable, Identifiable, Send
     case chatGPTCodex
     case claude
     case doubao
+    case deepSeek
     case qwenWork
     case workBuddy
     case weSight
@@ -17,6 +18,7 @@ public enum AgentID: String, Codable, CaseIterable, Hashable, Identifiable, Send
         case .chatGPTCodex: return "ChatGPT / Codex"
         case .claude: return "Claude"
         case .doubao: return L10n.text("豆包")
+        case .deepSeek: return L10n.text("DeepSeek Harness")
         case .qwenWork: return L10n.text("千问办公")
         case .workBuddy: return "WorkBuddy"
         case .weSight: return "WeSight"
@@ -28,6 +30,7 @@ public enum AgentID: String, Codable, CaseIterable, Hashable, Identifiable, Send
         case .chatGPTCodex: return "com.openai.codex"
         case .claude: return "com.anthropic.claudefordesktop"
         case .doubao: return "com.bot.pc.doubao"
+        case .deepSeek: return "com.deepseek.dsh"
         case .qwenWork: return "com.alibaba.qwenwork"
         case .workBuddy: return "com.tencent.workbuddy.mac"
         case .weSight: return "ai.wesight.app"
@@ -39,6 +42,7 @@ public enum AgentID: String, Codable, CaseIterable, Hashable, Identifiable, Send
         case .chatGPTCodex: return "chatgpt"
         case .claude: return "claude"
         case .doubao: return "doubao"
+        case .deepSeek: return "deepseek"
         case .qwenWork: return "qwen"
         case .workBuddy: return "workbuddy"
         case .weSight: return "wesight"

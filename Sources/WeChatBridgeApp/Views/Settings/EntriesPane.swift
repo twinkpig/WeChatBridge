@@ -11,6 +11,7 @@ import SwiftUI
 struct EntriesPane: View {
     @ObservedObject var targets: ForwardTargets
     @ObservedObject var preferences: Preferences
+    @ObservedObject var authorization: AccessibilityAuthorization
     @StateObject private var probe = ShareEntryProbe()
     @State private var configuration: EntryConfiguration?
 
@@ -21,6 +22,14 @@ struct EntriesPane: View {
                 .foregroundStyle(Theme.inkSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: 460, alignment: .leading)
+
+            // The permission is the one thing every entry below this depends
+            // on, and it fails silently: a forward with no Accessibility
+            // permission writes the files to the clipboard and reports a
+            // failure that reads, from the user's side, as if the switch had
+            // done nothing at all. Stating it here, where the switches are,
+            // makes the link visible before anything has to fail.
+            authorizationNotice
 
             ShareEntryList(
                 probe: probe,
@@ -45,6 +54,7 @@ struct EntriesPane: View {
             .buttonStyle(PlainPressButtonStyle(staticFeedback: true))
             .accessibilityIdentifier("entries.system-settings")
         }
+        .onAppear { authorization.refresh() }
         .sheet(item: $configuration) { item in
             VStack(alignment: .leading, spacing: Space.xl) {
                 HStack {
@@ -71,9 +81,31 @@ struct EntriesPane: View {
         .onAppear { probe.refresh() }
         // The entries can still be changed in System Settings, and the user
         // comes straight back afterwards, so this is re-read on every
-        // activation rather than once.
+        // activation rather than once. The permission is re-read on the same
+        // beat for the same reason: it is granted in System Settings too.
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
             probe.refresh()
+            authorization.refresh()
+        }
+    }
+
+    /// The status of the one permission every switch on this pane needs.
+    ///
+    /// Shown in both states — granted as well as missing — because this row is
+    /// where the user looks to explain why pasting does not work, and a row that
+    /// only appears when something is wrong reads the same as an unasked
+    /// question.
+    @ViewBuilder
+    private var authorizationNotice: some View {
+        if authorization.isTrusted {
+            Notice(L10n.text("已授权"), tone: .good)
+                .frame(maxWidth: 460)
+        } else {
+            Notice(text: L10n.text("自动粘贴需要辅助功能权限。"), tone: .warn) {
+                Button(L10n.text("去授权")) { authorization.guideIfNeeded() }
+                    .buttonStyle(SettingsActionButtonStyle())
+            }
+            .frame(maxWidth: 460)
         }
     }
 

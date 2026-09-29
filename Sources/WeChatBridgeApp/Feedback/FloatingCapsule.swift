@@ -47,10 +47,17 @@ enum FloatingCapsule {
     /// frame: a hosting view laid out narrow reports the narrow width it was
     /// given back, which clipped every message longer than the one before it.
     static func measure(_ hosting: NSView) -> NSSize {
+        let original = hosting.frame
         hosting.frame = NSRect(x: 0, y: 0, width: Metrics.toastMaxWidth * 2, height: 200)
         hosting.layoutSubtreeIfNeeded()
         let fitting = hosting.fittingSize
         let intrinsic = hosting.intrinsicContentSize
+        // Restore the frame the caller had: this view is the window's content,
+        // and leaving it at the scratch size (720×200) after measuring makes
+        // the panel draw a 720pt-wide layout through a 290pt window — the
+        // caller only ever sees one corner of it.
+        hosting.frame = original
+        hosting.layoutSubtreeIfNeeded()
         return NSSize(
             width: max(fitting.width, intrinsic.width),
             height: max(max(fitting.height, intrinsic.height), Metrics.toastMinHeight)

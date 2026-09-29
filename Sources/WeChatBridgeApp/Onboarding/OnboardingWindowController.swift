@@ -43,9 +43,13 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
         window.title = ""
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
-        // No `.resizable`: every step is laid out to fit the design width, and
-        // the height is settled below.
-        window.styleMask = [.titled, .closable, .fullSizeContentView]
+        // `.resizable` and `.miniaturizable`: the guide's height is settled by
+        // its own constraints rather than a fixed design number, and a step
+        // whose roster outgrows the design height needs the window to grow
+        // with it instead of clipping the footer button off the bottom.
+        // `.fullScreen` is absent on purpose — that mask set outside a
+        // full-screen transition throws `NSGenericException`.
+        window.styleMask = [.titled, .closable, .resizable, .miniaturizable, .fullSizeContentView]
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
         // The permission step sends the user to System Settings, which macOS may

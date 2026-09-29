@@ -41,12 +41,44 @@ final class ScenePickerPanel {
         let window = makeWindow()
         self.window = window
         let hosting = ToastHostingView(rootView: view)
+        // Match the window's frame, not `measure`'s scratch frame: without an
+        // autoresizing mask the content keeps whatever frame it was last laid
+        // out at, and the panel ends up drawing a 720pt-wide layout through a
+        // 290pt window.
+        hosting.translatesAutoresizingMaskIntoConstraints = true
+        hosting.autoresizingMask = [.width, .height]
         window.contentView = hosting
+        // Size from the content, not from the `height(rows:)` estimate: the
+        // header's height depends on the scene's summary length, and the
+        // `chrome` constant under-counts it, which squeezed the list shut and
+        // left the header clipped to 「每次转发只」.
+        //
+        // `measure` lays the hosting view out at a wide frame, so the ScrollView
+        // inside reports its natural (content) width — 401pt for a long summary,
+        // far past the 290pt design width. That width is not a request for a
+        // wider window: the list scrolls vertically and truncates horizontally.
+        // Only the measured height is used.
+        let measured = FloatingCapsule.measure(hosting)
         let size = NSSize(
             width: Self.width,
-            height: max(Self.height(rows: scenes.count), FloatingCapsule.measure(hosting).height)
+            height: max(Self.height(rows: scenes.count), measured.height)
         )
-        window.setFrame(FloatingCapsule.fitted(place(size), to: hosting), display: true)
+        var placed = place(size)
+        placed.size.width = Self.width
+        placed.size.height = max(placed.size.height, measured.height)
+        let screen = FloatingCapsule.visibleFrame(containing: placed.origin)
+        placed.origin = FloatingCapsule.clamped(placed, in: screen).origin
+        window.setFrame(placed, display: true)
+        // Re-measure now that the view is in a window with the real frame:
+        // `measure`'s wide scratch frame can report a different height than the
+        // 290pt-wide one the panel actually draws at, and the content view is
+        // what the user sees, not the scratch.
+        let inWindow = hosting.fittingSize
+        if inWindow.height > placed.size.height + 0.5 {
+            placed.size.height = inWindow.height
+            placed.origin = FloatingCapsule.clamped(placed, in: screen).origin
+            window.setFrame(placed, display: true)
+        }
         window.alphaValue = Motion.systemReducesMotion ? 1 : 0
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
@@ -250,6 +282,12 @@ private struct ScenePickerView: View {
                 }
             }
             .frame(height: ScenePickerPanel.rowHeight * CGFloat(min(max(scenes.count, 1), ScenePickerPanel.visibleRows)))
+            // Clamp the list to the panel's design width. Without this its
+            // fittingSize reports the rows' natural width (a long summary is
+            // wider than 290pt) and the capsule machinery grows the window
+            // sideways off screen. The rows scroll vertically and truncate
+            // horizontally, so the fixed width is the intent, not a loss.
+            .frame(width: ScenePickerPanel.width - (Space.s + 2) * 2)
 
             HStack(spacing: Space.s) {
                 Button(L10n.text("直接转发"), action: onDirect)

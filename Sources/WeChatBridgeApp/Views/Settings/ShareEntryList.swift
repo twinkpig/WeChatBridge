@@ -158,6 +158,7 @@ struct ShareEntryList: View {
         case .codex: file = "04-chatgpt.png"
         case .claude: file = "03-claude.png"
         case .doubao: file = "01-doubao.png"
+        case .deepSeek: file = "08-deepseek.png"
         case .qwen: file = "02-qwen.png"
         case .workBuddy: file = "06-workbuddy.png"
         case .weSight: file = "07-wesight.png"
@@ -176,7 +177,7 @@ struct ShareEntryList: View {
     /// table of symbols would be a second answer to "which icon is this entry".
     static func symbol(for action: ShareAction) -> String {
         switch action {
-        case .codex, .claude, .doubao, .qwen, .workBuddy, .weSight: "paperplane"
+        case .codex, .claude, .doubao, .deepSeek, .qwen, .workBuddy, .weSight: "paperplane"
         case .obsidian: "book.closed"
         case .clipboard: "doc.on.clipboard"
         case .custom: "paperplane.circle"
@@ -186,7 +187,7 @@ struct ShareEntryList: View {
     private func detail(for action: ShareAction) -> String {
         if compactDetails {
             switch action {
-            case .codex, .claude, .doubao, .qwen, .workBuddy, .weSight:
+            case .codex, .claude, .doubao, .deepSeek, .qwen, .workBuddy, .weSight:
                 guard let bundleIdentifier = action.targetBundleIdentifier else {
                     return L10n.text("未安装")
                 }
@@ -210,6 +211,7 @@ struct ShareEntryList: View {
         case .codex: return L10n.text("激活 ChatGPT 并直接粘贴到输入框。")
         case .claude: return L10n.text("激活 Claude 并直接粘贴到输入框。")
         case .doubao: return L10n.text("激活豆包并直接粘贴到输入框。")
+        case .deepSeek: return L10n.text("激活 DeepSeek Harness 并直接粘贴到输入框。")
         case .qwen: return L10n.text("激活千问办公并直接粘贴到输入框。")
         case .workBuddy: return L10n.text("激活 WorkBuddy 并直接粘贴到输入框。")
         case .weSight: return L10n.text("激活 WeSight 并直接粘贴到输入框。")
@@ -222,7 +224,7 @@ struct ShareEntryList: View {
     private func detailIsWarning(for action: ShareAction) -> Bool {
         guard compactDetails else { return false }
         switch action {
-        case .codex, .claude, .doubao, .qwen, .workBuddy, .weSight:
+        case .codex, .claude, .doubao, .deepSeek, .qwen, .workBuddy, .weSight:
             return action.targetBundleIdentifier.map {
                 !InstalledApp.lookup($0).isInstalled
             } ?? true

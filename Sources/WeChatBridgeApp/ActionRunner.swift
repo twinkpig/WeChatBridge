@@ -79,7 +79,7 @@ final class ActionRunner {
             // Nothing is shown: the share sheet said 「已复制到剪贴板」 a moment
             // ago and is still on screen. A second capsule saying it again is
             // WeChatBridge talking over the system.
-        case .codex, .claude, .doubao, .qwen, .workBuddy, .weSight, .obsidian, .custom:
+        case .codex, .claude, .doubao, .deepSeek, .qwen, .workBuddy, .weSight, .obsidian, .custom:
             // Shares and WeChat captures share the same clipboard queue.
             //
             // Read here rather than where the panel opens. This forward may wait
@@ -325,8 +325,17 @@ final class ActionRunner {
         // path, and let its own tools unpack and inspect the file.
         let doubaoReadsLocalArchive = bundleIdentifier == ShareAction.doubao.targetBundleIdentifier
             && arrival.urls.contains { $0.pathExtension.lowercased() == "zip" }
-        let pathOnly = configuredPathOnly || doubaoReadsLocalArchive
-        let promptURLs = doubaoReadsLocalArchive ? doubaoPathAliases(for: arrival.urls) : arrival.urls
+        // DeepSeek Harness reads local paths in its agent the same way, and the
+        // user's own setting for it lives on the custom-target row that this
+        // entry used to be. Built in now, the default comes with it: pasting
+        // the quoted POSIX path lets the harness's file tool open the archive
+        // itself, where a pasted file would only land in its message composer.
+        let deepSeekReadsLocalArchive = bundleIdentifier == ShareAction.deepSeek.targetBundleIdentifier
+            && arrival.urls.contains { $0.pathExtension.lowercased() == "zip" }
+        let pathOnly = configuredPathOnly || doubaoReadsLocalArchive || deepSeekReadsLocalArchive
+        let promptURLs = doubaoReadsLocalArchive
+            ? doubaoPathAliases(for: arrival.urls)
+            : arrival.urls
         let agent = AgentID.matching(bundleIdentifier: bundleIdentifier)
         let scenePrompt: String? = context.scene.flatMap { scene -> String? in
             if let agent, !scene.compatibleAgents.contains(agent) {

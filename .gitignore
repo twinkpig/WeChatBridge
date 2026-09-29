@@ -63,3 +63,8 @@ memory/
 # Python byte-code from local scripts
 __pycache__/
 *.pyc
+
+# Module caches created by the local build recipe
+.swiftpm-cache/
+.swiftpm-module-cache/
+.clang-cache/

@@ -172,7 +172,11 @@ struct SettingsView: View {
         case .skills:
             SkillsPane(skills: skills, preferences: preferences, router: router)
         case .entries:
-            EntriesPane(targets: forwardTargets, preferences: preferences)
+            EntriesPane(
+                targets: forwardTargets,
+                preferences: preferences,
+                authorization: authorization
+            )
         case .permissions:
             PermissionsPane(authorization: authorization, screenRecording: screenRecording)
         case .history:

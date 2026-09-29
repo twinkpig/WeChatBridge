@@ -15,6 +15,8 @@ public enum ShareAction: String, Codable, Sendable, CaseIterable {
     case claude
     /// Paste into Doubao.
     case doubao
+    /// Paste into DeepSeek Harness.
+    case deepSeek
     /// Paste into QwenWork.
     case qwen
     /// Paste into WorkBuddy.
@@ -72,6 +74,7 @@ public enum ShareAction: String, Codable, Sendable, CaseIterable {
         case .codex: return "com.openai.codex"
         case .claude: return "com.anthropic.claudefordesktop"
         case .doubao: return "com.bot.pc.doubao"
+        case .deepSeek: return "com.deepseek.dsh"
         case .qwen: return "com.alibaba.qwenwork"
         case .workBuddy: return "com.tencent.workbuddy.mac"
         case .weSight: return "ai.wesight.app"
@@ -92,7 +95,7 @@ public enum ShareAction: String, Codable, Sendable, CaseIterable {
     public var needsIntent: Bool {
         switch self {
         case .clipboard: return false
-        case .codex, .claude, .doubao, .qwen, .workBuddy, .weSight, .obsidian, .custom: return true
+        case .codex, .claude, .doubao, .qwen, .workBuddy, .weSight, .obsidian, .deepSeek, .custom: return true
         }
     }
 
@@ -104,6 +107,7 @@ public enum ShareAction: String, Codable, Sendable, CaseIterable {
         case .codex: return L10n.text("Codex")
         case .claude: return L10n.text("Claude")
         case .doubao: return L10n.text("豆包")
+        case .deepSeek: return L10n.text("DeepSeek Harness")
         case .qwen: return L10n.text("千问办公")
         case .workBuddy: return "WorkBuddy"
         case .weSight: return L10n.text("WeSight")
@@ -124,6 +128,7 @@ public enum ShareAction: String, Codable, Sendable, CaseIterable {
         switch self {
         case .codex, .claude: return L10n.format("发给 %@", targetDisplayName)
         case .doubao: return L10n.text("发给豆包")
+        case .deepSeek: return L10n.text("发给 DeepSeek Harness")
         case .qwen: return L10n.text("发给千问办公")
         case .workBuddy: return L10n.text("发给 WorkBuddy")
         case .weSight: return L10n.text("发给 WeSight")
@@ -142,6 +147,7 @@ public enum ShareAction: String, Codable, Sendable, CaseIterable {
         case .codex: return "ShareCodex"
         case .claude: return "ShareClaude"
         case .doubao: return "ShareDoubao"
+        case .deepSeek: return "ShareDeepSeek"
         case .qwen: return "ShareQwenWork"
         case .workBuddy: return "ShareWorkBuddy"
         case .weSight: return "ShareWeSight"
