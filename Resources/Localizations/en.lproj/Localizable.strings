@@ -404,7 +404,6 @@
 "原 Prompt %d" = "Legacy Prompt %d";
 "通用群聊摘要场景。" = "A general chat summary scene.";
 
-
 /* Skill library & scene skill references */
 " · 技能库中已被修改" = " · modified in the library";
 " · 暂无技能包" = " · no package";
@@ -484,11 +483,7 @@
 "快捷键：⌃⌥1–9 把对应的启用场景用于下次转发；可把场景包 JSON 拖进此列表导入。" = "Shortcut: Ctrl+Option+1-9 uses the matching enabled scene for the next forward; you can also drop scene package JSON files onto this list to import.";
 "「%@」已安装同版本场景。覆盖将更新场景内容，本地的启用状态和群绑定会保留。" = ""%@" is already installed at the same version. Overwriting updates the scene; its local enabled state and group bindings are kept.";
 
-"发给 DeepSeek Harness" = "Send to DeepSeek Harness";
-"DeepSeek Harness" = "DeepSeek Harness";
-"激活 DeepSeek Harness 并直接粘贴到输入框。" = "Brings DeepSeek Harness forward and pastes straight into its input.";
 "有转发未完成，点按查看" = "A forward did not finish — click to see it";
 "辅助功能未授权" = "Accessibility not granted";
 "自动粘贴需要辅助功能权限。" = "Automatic paste needs the Accessibility permission.";
 "去授权" = "Grant Permission";
-
